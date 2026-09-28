@@ -244,14 +244,14 @@ export default function AdminLibrary() {
                     <Text label="Review due date" type="date" value={editing.entry.reviewDate} onChange={v => updateField('reviewDate', v)} />
                   </div>
                   <TextArea label="Activity / work process" value={editing.entry.activity} onChange={v => updateField('activity', v)} rows={2} />
-                  <Text label="Classifications (comma-separated)" value={(editing.entry.classifications || []).join(', ')} onChange={v => updateField('classifications', v.split(',').map(s => s.trim()).filter(Boolean))} placeholder="e.g. Flammable, Harmful/Irritant" />
+                  <TextArea label="Classifications (comma-separated)" value={(editing.entry.classifications || []).join(', ')} onChange={v => updateField('classifications', v.split(',').map(s => s.trim()).filter(Boolean))} placeholder="e.g. Flammable, Harmful/Irritant" rows={3} />
                   <TextArea label="Persons at risk (comma-separated)" value={(editing.entry.personsAtRisk || []).join(', ')} onChange={v => updateField('personsAtRisk', v.split(',').map(s => s.trim()).filter(Boolean))} rows={1} />
                   <TextArea label="Risks to health" value={editing.entry.healthRisks} onChange={v => updateField('healthRisks', v)} rows={2} />
                   <TextArea label="Control measures / PPE" value={editing.entry.controls} onChange={v => updateField('controls', v)} rows={3} />
                   <TextArea label="First aid" value={editing.entry.firstAid} onChange={v => updateField('firstAid', v)} rows={2} />
                   <div className="row">
-                    <Text label="Storage" value={editing.entry.storage} onChange={v => updateField('storage', v)} />
-                    <Text label="Disposal" value={editing.entry.disposal} onChange={v => updateField('disposal', v)} />
+                    <TextArea label="Storage" value={editing.entry.storage} onChange={v => updateField('storage', v)} rows={3} />
+                    <TextArea label="Disposal" value={editing.entry.disposal} onChange={v => updateField('disposal', v)} rows={3} />
                   </div>
                 </>
               )}
