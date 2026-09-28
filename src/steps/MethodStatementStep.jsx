@@ -1,10 +1,12 @@
 import React from 'react'
 import { SectionCard, Text, TextArea } from '../components/Fields.jsx'
-import { METHOD_STATEMENTS, findMS } from '../data/library.js'
+import { useLibrary } from '../state/LibraryContext.jsx'
 import { blankCustomMS } from '../state/initialData.js'
 
 export default function MethodStatementStep({ data, setSection, patch }) {
   const ms = data.methodStatement
+  const { methodStatements: METHOD_STATEMENTS, findMS } = useLibrary()
+  const activeLibrary = METHOD_STATEMENTS.filter(item => !item.archived)
 
   function toggleLibrary(ref) {
     const exists = ms.selected.includes(ref)
@@ -50,7 +52,7 @@ export default function MethodStatementStep({ data, setSection, patch }) {
         help="Select the relevant method statement(s) from the library for the activities actually being carried out on this project, or draft a bespoke sequence below."
       >
         <div className="lib-grid">
-          {METHOD_STATEMENTS.map(item => {
+          {activeLibrary.map(item => {
             const sel = ms.selected.includes(item.ref)
             return (
               <div key={item.ref} className={`lib-item ${sel ? 'selected' : ''}`} onClick={() => toggleLibrary(item.ref)}>
@@ -72,7 +74,10 @@ export default function MethodStatementStep({ data, setSection, patch }) {
             if (!item) return null
             return (
               <div key={ref} className="selected-card" style={{ marginBottom: 12 }}>
-                <div className="lib-title">{item.ref} — {item.activity}</div>
+                <div className="lib-title">
+                  {item.ref} — {item.activity}
+                  {item.archived && <span className="expired" style={{ marginLeft: 8 }}>Archived by admin — check whether it's still appropriate</span>}
+                </div>
                 <ol style={{ paddingLeft: 20, marginTop: 8 }}>
                   {item.steps.map((s, i) => <li key={i} style={{ marginBottom: 4 }}>{s}</li>)}
                 </ol>

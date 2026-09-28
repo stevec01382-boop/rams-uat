@@ -1,7 +1,11 @@
-import { ramsStore, checkPasscode, json, sendRamsEmail } from './lib/shared.js'
+import { ramsStore, json, sendRamsEmail } from './lib/shared.js'
+import { requireUser } from './lib/auth.js'
 
 export default async (req) => {
   if (req.method !== 'POST') return json(405, { message: 'Method not allowed' })
+
+  const auth = await requireUser(req)
+  if (!auth.ok) return json(auth.status, { message: auth.message })
 
   let body
   try {
@@ -9,10 +13,6 @@ export default async (req) => {
   } catch {
     return json(400, { message: 'Invalid JSON body' })
   }
-
-  const passcode = req.headers.get('x-rams-passcode') || ''
-  const auth = checkPasscode(passcode)
-  if (!auth.ok) return json(401, { message: auth.message })
 
   const { id, recipients } = body || {}
   if (!id) return json(400, { message: 'Missing id' })

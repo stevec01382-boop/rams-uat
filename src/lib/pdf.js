@@ -1,7 +1,7 @@
 import pdfMake from 'pdfmake/build/pdfmake'
 import pdfFonts from 'pdfmake/build/vfs_fonts'
 import { HUTCHI_LOGO_PNG } from '../assets/logoBase64.js'
-import { findRA, findCOSHH, findMS, riskBand } from '../data/library.js'
+import { riskBand } from './riskBand.js'
 import { PPE_STANDARDS } from '../data/defaults.js'
 
 // pdfmake's vfs_fonts.js has changed its export shape across versions --
@@ -117,8 +117,11 @@ function signatureBlock(person, roleLabel) {
   }
 }
 
-export function buildDocDefinition(data) {
+export function buildDocDefinition(data, library) {
   const { project, scope, riskAssessments, coshh, genericPractices, workAtHeight, plantMaterials, permits, training, ppe, emergency, communication, methodStatement, signOff } = data
+  const findRA = ref => library?.riskAssessments?.find(r => r.ref === ref)
+  const findCOSHH = ref => library?.coshhSheets?.find(r => r.ref === ref)
+  const findMS = ref => library?.methodStatements?.find(r => r.ref === ref)
 
   const allRA = [
     ...riskAssessments.selected.map(s => ({ ...findRA(s.ref), reviewDate: s.reviewDate })),
@@ -375,18 +378,18 @@ export function buildDocDefinition(data) {
   }
 }
 
-export function createPdf(data) {
-  return pdfMake.createPdf(buildDocDefinition(data))
+export function createPdf(data, library) {
+  return pdfMake.createPdf(buildDocDefinition(data, library))
 }
 
-export function downloadPdf(data, filename) {
-  createPdf(data).download(filename || 'RAMS.pdf')
+export function downloadPdf(data, library, filename) {
+  createPdf(data, library).download(filename || 'RAMS.pdf')
 }
 
-export function getPdfBase64(data) {
+export function getPdfBase64(data, library) {
   return new Promise((resolve, reject) => {
     try {
-      createPdf(data).getBase64((base64) => resolve(base64))
+      createPdf(data, library).getBase64((base64) => resolve(base64))
     } catch (e) {
       reject(e)
     }

@@ -3,19 +3,23 @@ import { SectionCard, Text, TextArea } from '../components/Fields.jsx'
 import { overallReadiness } from '../lib/validate.js'
 import { downloadPdf, getPdfBase64 } from '../lib/pdf.js'
 import { submitRams } from '../lib/api.js'
+import { useLibrary } from '../state/LibraryContext.jsx'
+import { useAuth } from '../auth/AuthProvider.jsx'
 
 export default function ReviewStep({ data, patch, setData }) {
   const issues = overallReadiness(data)
   const [sending, setSending] = useState(false)
   const [result, setResult] = useState(null) // { ok, message }
   const [downloading, setDownloading] = useState(false)
+  const library = useLibrary()
+  const { getAccessToken, devMode } = useAuth()
 
   const filename = `RAMS-${(data.project.jobRef || 'draft').replace(/\s+/g, '_')}-${data.project.revision || 'Rev0'}.pdf`
 
   async function handleDownload() {
     setDownloading(true)
     try {
-      downloadPdf(data, filename)
+      downloadPdf(data, library, filename)
     } finally {
       setDownloading(false)
     }
@@ -25,9 +29,10 @@ export default function ReviewStep({ data, patch, setData }) {
     setSending(true)
     setResult(null)
     try {
-      const pdfBase64 = await getPdfBase64(data)
+      const pdfBase64 = await getPdfBase64(data, library)
       const recipients = data.distribution.recipients.split(',').map(s => s.trim()).filter(Boolean)
-      const res = await submitRams({ data, pdfBase64, recipients, message: data.distribution.message })
+      const token = devMode ? null : await getAccessToken()
+      const res = await submitRams({ data, pdfBase64, recipients, message: data.distribution.message, token })
       if (res.ok) {
         setData(prev => ({ ...prev, meta: { ...prev.meta, status: 'completed', submittedAt: new Date().toISOString(), storedId: res.body.id } }))
         setResult({ ok: true, message: res.body.emailed ? 'Saved to records and emailed to the recipients below.' : 'Saved to records. Email was not sent — check the message below.' , detail: res.body.emailError })

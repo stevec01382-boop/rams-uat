@@ -1,5 +1,5 @@
 import React from 'react'
-import { riskBand } from '../data/library.js'
+import { riskBand } from '../lib/riskBand.js'
 
 export function scoreOf(s, l) { return Number(s || 0) * Number(l || 0) }
 

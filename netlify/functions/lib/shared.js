@@ -4,17 +4,6 @@ export function ramsStore() {
   return getStore('rams-submissions')
 }
 
-export function checkPasscode(provided) {
-  const expected = process.env.RAMS_ADMIN_PASSCODE
-  if (!expected) {
-    return { ok: false, message: 'RAMS_ADMIN_PASSCODE is not set on this site yet — set it in Netlify environment variables.' }
-  }
-  if (provided !== expected) {
-    return { ok: false, message: 'Incorrect passcode.' }
-  }
-  return { ok: true }
-}
-
 export function json(status, body) {
   return new Response(JSON.stringify(body), {
     status,

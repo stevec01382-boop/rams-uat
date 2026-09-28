@@ -1,11 +1,11 @@
-import { ramsStore, checkPasscode, json } from './lib/shared.js'
+import { ramsStore, json } from './lib/shared.js'
+import { requireUser } from './lib/auth.js'
 
 export default async (req) => {
-  const url = new URL(req.url)
-  const passcode = url.searchParams.get('passcode') || ''
-  const auth = checkPasscode(passcode)
-  if (!auth.ok) return json(401, { message: auth.message })
+  const auth = await requireUser(req)
+  if (!auth.ok) return json(auth.status, { message: auth.message })
 
+  const url = new URL(req.url)
   const id = url.searchParams.get('id')
   if (!id) return json(400, { message: 'Missing id' })
 

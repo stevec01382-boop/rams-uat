@@ -1,4 +1,11 @@
-// Hutchi Master RAMS - Risk Assessment / COSHH / Method Statement libraries.
+// Hutchi Master RAMS - seed content for the Risk Assessment / COSHH /
+// Method Statement libraries.
+//
+// This file is used ONLY to seed the Netlify Blobs-backed library the
+// first time the app runs on a fresh site (see netlify/functions/lib/
+// library.js) -- from that point on, the live/editable copy lives in
+// Blobs and admins manage it from the in-app Library page, not here.
+// Re-deploying the app does not overwrite what's in Blobs.
 //
 // Content is realistic, UK-compliant starting content written to match the
 // index in the Hutchi Master RAMS Template (RA refs, COSHH refs and MS refs
@@ -25,14 +32,6 @@
 // Treat this as a strong first draft, not a substitute for sign-off by a
 // competent person / SHEQ manager before live use -- exactly as the
 // original template's "How to use this appendix" notes require.
-
-export function riskBand(score) {
-  if (score <= 6) return 'low'
-  if (score <= 12) return 'medium'
-  return 'high'
-}
-
-export const REVIEW_MONTHS_DEFAULT = 12
 
 // ---------------------------------------------------------------------------
 // Appendix A -- Risk Assessment Library
@@ -507,6 +506,3 @@ export const METHOD_STATEMENTS = [
   },
 ]
 
-export function findRA(ref) { return RISK_ASSESSMENTS.find(r => r.ref === ref) }
-export function findCOSHH(ref) { return COSHH_SHEETS.find(r => r.ref === ref) }
-export function findMS(ref) { return METHOD_STATEMENTS.find(r => r.ref === ref) }

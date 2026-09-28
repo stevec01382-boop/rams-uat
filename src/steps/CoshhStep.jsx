@@ -1,6 +1,6 @@
 import React from 'react'
 import { SectionCard, Text, TextArea } from '../components/Fields.jsx'
-import { COSHH_SHEETS, findCOSHH } from '../data/library.js'
+import { useLibrary } from '../state/LibraryContext.jsx'
 import { blankCustomCOSHH } from '../state/initialData.js'
 
 function addMonths(dateStr, months) {
@@ -12,6 +12,8 @@ function today() { return new Date().toISOString().slice(0, 10) }
 
 export default function CoshhStep({ data, setSection }) {
   const c = data.coshh
+  const { coshhSheets: COSHH_SHEETS, findCOSHH } = useLibrary()
+  const activeLibrary = COSHH_SHEETS.filter(item => !item.archived)
   const isExpired = (dateStr) => dateStr && new Date(dateStr) < new Date()
 
   function toggleLibrary(ref) {
@@ -44,7 +46,7 @@ export default function CoshhStep({ data, setSection }) {
         help="List only the substances actually used on this job. Check the review date before attaching — an expired COSHH sheet must be reassessed against the current manufacturer's Safety Data Sheet, not copied from a similar product with just the date changed."
       >
         <div className="lib-grid">
-          {COSHH_SHEETS.map(item => {
+          {activeLibrary.map(item => {
             const sel = c.selected.find(s => s.ref === item.ref)
             const expired = sel && isExpired(sel.reviewDate)
             return (
@@ -74,7 +76,10 @@ export default function CoshhStep({ data, setSection }) {
             if (!item) return null
             return (
               <div key={sel.ref} className="selected-card" style={{ marginBottom: 12 }}>
-                <div className="lib-title">{item.ref} — {item.product}</div>
+                <div className="lib-title">
+                  {item.ref} — {item.product}
+                  {item.archived && <span className="expired" style={{ marginLeft: 8 }}>Archived by admin — check whether it's still appropriate</span>}
+                </div>
                 <table className="simple" style={{ marginTop: 8 }}>
                   <tbody>
                     <tr><th style={{ width: 180 }}>Classification</th><td>{item.classifications.join(', ')}</td></tr>

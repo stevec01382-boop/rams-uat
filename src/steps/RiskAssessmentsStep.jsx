@@ -1,6 +1,6 @@
 import React from 'react'
 import { SectionCard, Text } from '../components/Fields.jsx'
-import { RISK_ASSESSMENTS, findRA } from '../data/library.js'
+import { useLibrary } from '../state/LibraryContext.jsx'
 import { blankCustomRA, newId, today } from '../state/initialData.js'
 import HazardEditor from '../components/HazardEditor.jsx'
 import RiskPill from '../components/RiskPill.jsx'
@@ -13,6 +13,8 @@ function addMonths(dateStr, months) {
 
 export default function RiskAssessmentsStep({ data, setSection }) {
   const ra = data.riskAssessments
+  const { riskAssessments: RISK_ASSESSMENTS, findRA } = useLibrary()
+  const activeLibrary = RISK_ASSESSMENTS.filter(item => !item.archived)
 
   function toggleLibrary(ref) {
     const exists = ra.selected.find(s => s.ref === ref)
@@ -54,7 +56,7 @@ export default function RiskAssessmentsStep({ data, setSection }) {
         help="Select only the RAs relevant to the actual scope of work from the Hutchi library, or add a project-specific one below. Check the review date — an expired RA must be reassessed before it's attached, not attached as-is."
       >
         <div className="lib-grid">
-          {RISK_ASSESSMENTS.map(item => {
+          {activeLibrary.map(item => {
             const sel = ra.selected.find(s => s.ref === item.ref)
             const expired = sel && isExpired(sel.reviewDate)
             return (
@@ -84,7 +86,10 @@ export default function RiskAssessmentsStep({ data, setSection }) {
             if (!item) return null
             return (
               <div key={sel.ref} className="selected-card" style={{ marginBottom: 12 }}>
-                <div className="lib-title">{item.ref} — {item.title}</div>
+                <div className="lib-title">
+                  {item.ref} — {item.title}
+                  {item.archived && <span className="expired" style={{ marginLeft: 8 }}>Archived by admin — check whether it's still appropriate</span>}
+                </div>
                 <table className="simple" style={{ marginTop: 8 }}>
                   <thead><tr><th>Hazard</th><th>Risk</th><th>Initial</th><th>Control measures</th><th>Residual</th></tr></thead>
                   <tbody>

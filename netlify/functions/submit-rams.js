@@ -1,7 +1,11 @@
 import { ramsStore, json, summarize, readIndex, writeIndex, sendRamsEmail } from './lib/shared.js'
+import { requireUser } from './lib/auth.js'
 
 export default async (req) => {
   if (req.method !== 'POST') return json(405, { message: 'Method not allowed' })
+
+  const auth = await requireUser(req)
+  if (!auth.ok) return json(auth.status, { message: auth.message })
 
   let body
   try {
@@ -20,7 +24,11 @@ export default async (req) => {
     const pdfBuffer = Buffer.from(pdfBase64, 'base64')
     await store.set(`pdf-${id}`, pdfBuffer, { metadata: { contentType: 'application/pdf' } })
 
-    const finalData = { ...data, meta: { ...data.meta, id, status: 'completed' }, distribution: { ...data.distribution, recipients: (recipients || []).join(', ') } }
+    const finalData = {
+      ...data,
+      meta: { ...data.meta, id, status: 'completed', submittedBy: { name: auth.name, email: auth.email } },
+      distribution: { ...data.distribution, recipients: (recipients || []).join(', ') },
+    }
     await store.setJSON(`data-${id}`, finalData)
 
     const list = await readIndex(store)

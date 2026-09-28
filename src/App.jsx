@@ -3,7 +3,10 @@ import Topbar from './components/Topbar.jsx'
 import Home from './pages/Home.jsx'
 import Builder from './pages/Builder.jsx'
 import Records from './pages/Records.jsx'
+import AdminLibrary from './pages/AdminLibrary.jsx'
 import { createInitialData } from './state/initialData.js'
+import { LibraryProvider } from './state/LibraryContext.jsx'
+import { useAuth } from './auth/AuthProvider.jsx'
 
 const DRAFT_KEY = 'hutchi-rams-draft-v1'
 
@@ -26,6 +29,7 @@ export default function App() {
   const [route, setRoute] = useState(getRoute())
   const [data, setData] = useState(() => loadDraft() || createInitialData())
   const [saveState, setSaveState] = useState('idle')
+  const { isAdmin } = useAuth()
 
   useEffect(() => {
     const onHash = () => setRoute(getRoute())
@@ -61,14 +65,20 @@ export default function App() {
     body = <Home onStart={() => navigate('/new')} onRecords={() => navigate('/records')} hasDraft={Boolean(data?.meta?.id)} data={data} />
   } else if (route === 'records') {
     body = <Records onBack={() => navigate('/')} />
+  } else if (route === 'admin/library') {
+    body = isAdmin
+      ? <AdminLibrary />
+      : <Home onStart={() => navigate('/new')} onRecords={() => navigate('/records')} hasDraft={Boolean(data?.meta?.id)} data={data} />
   } else {
     body = <Builder data={data} setData={setData} onExit={() => navigate('/')} onNewDraft={resetDraft} />
   }
 
   return (
-    <div className="app-shell" style={{ flexDirection: 'column', width: '100%' }}>
-      <Topbar route={route} navigate={navigate} saveState={route.startsWith('new') || route.startsWith('edit') ? saveState : null} />
-      {body}
-    </div>
+    <LibraryProvider>
+      <div className="app-shell" style={{ flexDirection: 'column', width: '100%' }}>
+        <Topbar route={route} navigate={navigate} saveState={route.startsWith('new') || route.startsWith('edit') ? saveState : null} />
+        {body}
+      </div>
+    </LibraryProvider>
   )
 }
