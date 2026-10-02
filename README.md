@@ -175,6 +175,21 @@ you need a data retention policy (the stored data includes names and signature i
 applies), that's worth deciding and either enforcing manually or adding a scheduled cleanup
 function for.
 
+### Revisions
+
+When a RAMS needs to be reissued (a scope change, an updated risk assessment, a new review date),
+use **Create revision** on its row in Records instead of rebuilding it from the blank builder.
+This loads every section of the previous issue — scope, RA/COSHH/method statement selections,
+PPE, emergency arrangements, everything — straight back into the builder, so only what's actually
+changed needs updating. The new copy gets its own id and an auto-incremented label (`Rev0` →
+`Rev1` → ...), linked back to the original, and every signature is cleared, since a new issue
+needs its own sign-off even when most of the content is unchanged.
+
+Records groups every issue of the same RAMS together and shows only the latest by default, with a
+collapsible history of earlier revisions underneath. Once a revision is sent, the issue it
+replaces is marked as superseded rather than left as an unrelated row, and the generated PDF's
+cover page records which earlier issue it supersedes for audit purposes.
+
 ## Library management (Admin)
 
 Signed-in Admins see a **Library** link in the top bar leading to three editable libraries (Risk
