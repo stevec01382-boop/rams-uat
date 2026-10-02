@@ -118,7 +118,7 @@ function signatureBlock(person, roleLabel) {
 }
 
 export function buildDocDefinition(data, library) {
-  const { project, scope, riskAssessments, coshh, genericPractices, workAtHeight, plantMaterials, permits, training, ppe, emergency, communication, methodStatement, signOff } = data
+  const { meta, project, scope, riskAssessments, coshh, genericPractices, workAtHeight, plantMaterials, permits, training, ppe, emergency, communication, methodStatement, signOff } = data
   const findRA = ref => library?.riskAssessments?.find(r => r.ref === ref)
   const findCOSHH = ref => library?.coshhSheets?.find(r => r.ref === ref)
   const findMS = ref => library?.methodStatements?.find(r => r.ref === ref)
@@ -169,7 +169,7 @@ export function buildDocDefinition(data, library) {
     margin: [0, 0, 0, 14],
   })
 
-  content.push(kv([
+  const coverRows = [
     ['Client / Project', project.clientName],
     ['Job Reference', project.jobRef],
     ['Revision', project.revision],
@@ -178,7 +178,11 @@ export function buildDocDefinition(data, library) {
     ['Exact Location', project.location],
     ['Proposed Start', `${fmtDate(project.startDate)} ${project.startTime || ''}`.trim()],
     ['Project Manager', `${project.pmName || '—'}  |  ${project.pmPhone || '—'}  |  ${project.pmEmail || '—'}`],
-  ]))
+  ]
+  if (meta?.previousId) {
+    coverRows.splice(3, 0, ['Supersedes', `${meta.previousRevisionLabel || 'previous issue'} of this RAMS`])
+  }
+  content.push(kv(coverRows))
 
   content.push(h2('Personnel Named on This Job'))
   content.push({

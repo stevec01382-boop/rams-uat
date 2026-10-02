@@ -120,3 +120,47 @@ export function createInitialData() {
     },
   }
 }
+
+// Builds a new draft from a previously completed RAMS, ready to open straight
+// into the Builder -- every section (scope, RAs, COSHH, method statement,
+// PPE, etc) is carried over as-is so the user only has to review/update what's
+// actually changed, rather than re-keying the whole document. What's reset:
+// a fresh id (linked back to the original via meta.lineageId/previousId), the
+// revision label and issue date, and every signature -- a revision is a new
+// issue of the document, so it needs its own sign-off even if nothing else
+// about it changed.
+export function createRevisionDraft(source) {
+  const clone = JSON.parse(JSON.stringify(source))
+  const revisionNumber = (source.meta?.revisionNumber || 0) + 1
+  const lineageId = source.meta?.lineageId || source.meta?.id || newId()
+
+  clone.meta = {
+    ...clone.meta,
+    id: newId(),
+    lineageId,
+    previousId: source.meta?.id || null,
+    previousRevisionLabel: source.project?.revision || '',
+    revisionNumber,
+    createdAt: new Date().toISOString(),
+    status: 'draft',
+  }
+  delete clone.meta.submittedAt
+  delete clone.meta.submittedBy
+  delete clone.meta.storedId
+  delete clone.meta.supersededBy
+
+  clone.project = {
+    ...clone.project,
+    revision: `Rev${revisionNumber}`,
+    issueDate: today(),
+  }
+
+  const ops = (clone.signOff?.operatives?.length ? clone.signOff.operatives : [blankOperative()])
+  clone.signOff = {
+    operatives: ops.map(o => ({ ...o, signature: null, signedAt: null })),
+    reviewer: { ...(clone.signOff?.reviewer || { name: '', role: 'SHEQ / QA Reviewer' }), signature: null, signedAt: null },
+    clientRep: { ...(clone.signOff?.clientRep || { enabled: false, name: '', role: '' }), signature: null, signedAt: null },
+  }
+
+  return clone
+}

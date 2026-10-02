@@ -19,11 +19,17 @@ export function summarize(data, id) {
     jobRef: data?.project?.jobRef || '',
     siteName: data?.project?.siteName || '',
     issueDate: data?.project?.issueDate || '',
+    revision: data?.project?.revision || '',
     status: data?.meta?.status || 'draft',
     signedCount: ops.filter(o => o.signature).length,
     reviewerSigned: Boolean(data?.signOff?.reviewer?.signature),
     createdAt: data?.meta?.createdAt || new Date().toISOString(),
     submittedAt: new Date().toISOString(),
+    // Revision lineage -- lets the Records page group every issue of "the
+    // same" RAMS together and show history instead of unrelated rows.
+    lineageId: data?.meta?.lineageId || id,
+    previousId: data?.meta?.previousId || null,
+    supersededBy: data?.meta?.supersededBy || null,
   }
 }
 

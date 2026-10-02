@@ -24,6 +24,13 @@ export default function ProjectStep({ data, patch, setSection }) {
 
   return (
     <>
+      {data.meta.previousId && (
+        <div className="banner info" style={{ marginBottom: 16 }}>
+          This is <strong>{p.revision}</strong>, a new revision of a previously issued RAMS ({data.meta.previousRevisionLabel || 'earlier issue'}).
+          Every section below has been carried over from that issue — review and update anything that's changed, then every
+          operative and the QA reviewer will need to sign again before this revision can be sent.
+        </div>
+      )}
       <SectionCard
         title="Project Details"
         help='Complete every field below before this RAMS is issued. Do not leave location, phone or email blank or generic (e.g. "as per proposal") — these were flagged as non-conformances in previous internal audits.'

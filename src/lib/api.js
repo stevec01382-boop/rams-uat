@@ -37,6 +37,16 @@ export async function listRams(token, query) {
   return asJson(res)
 }
 
+// Fetches the full stored form data (not the PDF) for an existing RAMS --
+// used to load it back into the builder as the starting point for a new
+// revision.
+export async function fetchRamsData(id, token) {
+  const res = await fetch(`/.netlify/functions/get-rams-data?id=${encodeURIComponent(id)}`, {
+    headers: authHeaders(token),
+  })
+  return asJson(res)
+}
+
 // Fetches the stored PDF with the auth header attached (a plain <a href>
 // can't carry a bearer token) and opens it in a new tab as a blob URL.
 export async function openRamsPdf(id, token) {

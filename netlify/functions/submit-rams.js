@@ -31,11 +31,27 @@ export default async (req) => {
     }
     await store.setJSON(`data-${id}`, finalData)
 
+    const previousId = finalData.meta?.previousId
+
+    // If this is a new revision of an earlier RAMS, mark that earlier one as
+    // superseded -- both in its own stored record (so get-rams-data still
+    // shows the full lineage) and in the index summary (so Records can hide
+    // it from the default view and show it under "revision history" instead).
+    if (previousId) {
+      const prevData = await store.get(`data-${previousId}`, { type: 'json' })
+      if (prevData) {
+        await store.setJSON(`data-${previousId}`, { ...prevData, meta: { ...prevData.meta, supersededBy: id } })
+      }
+    }
+
     const list = await readIndex(store)
     const summary = summarize(finalData, id)
-    const filtered = list.filter(r => r.id !== id)
-    filtered.unshift(summary)
-    await writeIndex(store, filtered)
+    let next = list.filter(r => r.id !== id)
+    if (previousId) {
+      next = next.map(r => (r.id === previousId ? { ...r, supersededBy: id } : r))
+    }
+    next.unshift(summary)
+    await writeIndex(store, next)
 
     const emailResult = await sendRamsEmail({ recipients, message, pdfBase64, data })
 

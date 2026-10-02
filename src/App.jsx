@@ -60,11 +60,16 @@ export default function App() {
     navigate('/new')
   }, [navigate])
 
+  const startRevision = useCallback((revisionDraft) => {
+    setData(revisionDraft)
+    navigate('/revise')
+  }, [navigate])
+
   let body
   if (route === 'home' || route === '') {
     body = <Home onStart={() => navigate('/new')} onRecords={() => navigate('/records')} hasDraft={Boolean(data?.meta?.id)} data={data} />
   } else if (route === 'records') {
-    body = <Records onBack={() => navigate('/')} />
+    body = <Records onBack={() => navigate('/')} onCreateRevision={startRevision} />
   } else if (route === 'admin/library') {
     body = isAdmin
       ? <AdminLibrary />
@@ -76,7 +81,7 @@ export default function App() {
   return (
     <LibraryProvider>
       <div className="app-shell" style={{ flexDirection: 'column', width: '100%' }}>
-        <Topbar route={route} navigate={navigate} saveState={route.startsWith('new') || route.startsWith('edit') ? saveState : null} />
+        <Topbar route={route} navigate={navigate} saveState={route.startsWith('new') || route.startsWith('edit') || route.startsWith('revise') ? saveState : null} />
         {body}
       </div>
     </LibraryProvider>
