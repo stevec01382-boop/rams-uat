@@ -190,6 +190,10 @@ collapsible history of earlier revisions underneath. Once a revision is sent, th
 replaces is marked as superseded rather than left as an unrelated row, and the generated PDF's
 cover page records which earlier issue it supersedes for audit purposes.
 
+If a revision was created by mistake, expand **earlier revisions** on that row and use
+**Reinstate as latest** on the one that should be active again — it doesn't delete anything, it
+just swaps which issue in that history is shown as the current one.
+
 ## Library management (Admin)
 
 Signed-in Admins see a **Library** link in the top bar leading to three editable libraries (Risk

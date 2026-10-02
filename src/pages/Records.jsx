@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react'
-import { listRams, resendRams, openRamsPdf, fetchRamsData } from '../lib/api.js'
+import { listRams, resendRams, openRamsPdf, fetchRamsData, reinstateRams } from '../lib/api.js'
 import { useAuth } from '../auth/AuthProvider.jsx'
 import { createRevisionDraft } from '../state/initialData.js'
 
@@ -39,6 +39,7 @@ export default function Records({ onCreateRevision }) {
   const [resendState, setResendState] = useState({})
   const [viewState, setViewState] = useState({})
   const [revisionState, setRevisionState] = useState({})
+  const [reinstateState, setReinstateState] = useState({})
   const [expanded, setExpanded] = useState({})
 
   const load = useCallback(async () => {
@@ -91,11 +92,25 @@ export default function Records({ onCreateRevision }) {
     }
   }
 
+  async function handleReinstate(id) {
+    setReinstateState(s => ({ ...s, [id]: 'working' }))
+    setError('')
+    const token = devMode ? null : await getAccessToken()
+    const res = await reinstateRams(id, token)
+    if (res.ok) {
+      setReinstateState(s => ({ ...s, [id]: null }))
+      await load()
+    } else {
+      setReinstateState(s => ({ ...s, [id]: 'error' }))
+      setError(res.body?.message || 'Could not reinstate this RAMS.')
+    }
+  }
+
   function toggleExpanded(key) {
     setExpanded(s => ({ ...s, [key]: !s[key] }))
   }
 
-  function rowActions(r, { allowRevision }) {
+  function rowActions(r, { allowRevision, allowReinstate }) {
     return (
       <td style={{ whiteSpace: 'nowrap' }}>
         <button className="btn btn-secondary btn-sm" onClick={() => handleView(r.id)} disabled={viewState[r.id] === 'opening'}>
@@ -109,6 +124,11 @@ export default function Records({ onCreateRevision }) {
             {revisionState[r.id] === 'loading' ? 'Loading…' : revisionState[r.id] === 'error' ? 'Failed — retry' : 'Create revision'}
           </button>
         )}
+        {allowReinstate && (
+          <button className="btn btn-secondary btn-sm" onClick={() => handleReinstate(r.id)} disabled={reinstateState[r.id] === 'working'}>
+            {reinstateState[r.id] === 'working' ? 'Working…' : reinstateState[r.id] === 'error' ? 'Failed — retry' : 'Reinstate as latest'}
+          </button>
+        )}
       </td>
     )
   }
@@ -117,9 +137,10 @@ export default function Records({ onCreateRevision }) {
     <div className="page">
       <h2>Records</h2>
       <p className="card-help">
-        Each row is the latest issue of a RAMS. If it's since been superseded, use <strong>Create revision</strong> to
-        open a new copy pre-filled with everything from the previous issue — just review what's changed and get it
-        re-signed, rather than rebuilding it from scratch.
+        Each row is the latest issue of a RAMS. Use <strong>Create revision</strong> to open a new copy pre-filled with
+        everything from the previous issue — just review what's changed and get it re-signed, rather than rebuilding
+        it from scratch. Expand <strong>earlier revisions</strong> on a row to see its history, and use
+        <strong> Reinstate as latest</strong> there to undo a revision and bring an earlier issue back to the top.
       </p>
       <div className="records-toolbar">
         <input
@@ -153,7 +174,7 @@ export default function Records({ onCreateRevision }) {
                   <td>{latest.issueDate}</td>
                   <td><StatusBadge r={latest} /></td>
                   <td>{latest.signedCount} operative(s){latest.reviewerSigned ? ' + QA' : ''}</td>
-                  {rowActions(latest, { allowRevision: true })}
+                  {rowActions(latest, { allowRevision: true, allowReinstate: false })}
                 </tr>
                 {history.length > 0 && (
                   <tr>
@@ -172,7 +193,7 @@ export default function Records({ onCreateRevision }) {
                     <td>{r.issueDate}</td>
                     <td><StatusBadge r={r} /></td>
                     <td>{r.signedCount} operative(s){r.reviewerSigned ? ' + QA' : ''}</td>
-                    {rowActions(r, { allowRevision: false })}
+                    {rowActions(r, { allowRevision: false, allowReinstate: true })}
                   </tr>
                 ))}
               </React.Fragment>

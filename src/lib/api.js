@@ -71,6 +71,17 @@ export async function resendRams(id, token, recipients) {
   return asJson(res)
 }
 
+// Undoes a "Create revision" -- brings an earlier/superseded issue of a RAMS
+// back to being the latest one shown on Records.
+export async function reinstateRams(id, token) {
+  const res = await fetch('/.netlify/functions/reinstate-rams', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
+    body: JSON.stringify({ id }),
+  })
+  return asJson(res)
+}
+
 // ---- Library (admin) ----
 
 export async function fetchLibrary(token) {
