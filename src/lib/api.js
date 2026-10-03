@@ -124,3 +124,37 @@ export async function openLibraryFile(fileKey, token) {
   const url = URL.createObjectURL(blob)
   window.open(url, '_blank')
 }
+
+// ---- Job-type templates ----
+// Any signed-in user can list/fetch templates (to start a new RAMS from
+// one); creating, editing and deleting them is Admin-only.
+
+export async function fetchTemplates(token) {
+  const res = await fetch('/.netlify/functions/list-templates', { headers: authHeaders(token) })
+  return asJson(res)
+}
+
+export async function fetchTemplate(id, token) {
+  const res = await fetch(`/.netlify/functions/get-template?id=${encodeURIComponent(id)}`, {
+    headers: authHeaders(token),
+  })
+  return asJson(res)
+}
+
+export async function saveTemplate({ id, name, description, content, token }) {
+  const res = await fetch('/.netlify/functions/save-template', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
+    body: JSON.stringify({ id, name, description, content }),
+  })
+  return asJson(res)
+}
+
+export async function deleteTemplate(id, token) {
+  const res = await fetch('/.netlify/functions/delete-template', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
+    body: JSON.stringify({ id }),
+  })
+  return asJson(res)
+}

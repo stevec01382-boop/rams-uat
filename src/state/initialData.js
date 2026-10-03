@@ -219,3 +219,62 @@ export function createDuplicateDraft(source) {
 
   return clone
 }
+
+// The sections of a RAMS that describe "what the job is" rather than "who
+// it's for" -- the same split createDuplicateDraft uses. A template is just
+// these sections, saved under a name so a job type (new build, refurb,
+// access control gate install, ...) can be reused without starting from a
+// specific previous job.
+const TEMPLATE_SECTIONS = [
+  'scope', 'riskAssessments', 'coshh', 'genericPractices', 'workAtHeight',
+  'plantMaterials', 'permits', 'training', 'ppe', 'emergency', 'communication', 'methodStatement',
+]
+
+// A blank set of template content, used when an admin starts a new template
+// from scratch rather than from an existing RAMS -- same defaults
+// createInitialData() uses for these sections.
+export function blankTemplateContent() {
+  return {
+    scope: { description: '' },
+    riskAssessments: { selected: [], custom: [] },
+    coshh: { selected: [], custom: [] },
+    genericPractices: { ...GENERIC_PRACTICES_DEFAULTS },
+    workAtHeight: { ...WORK_AT_HEIGHT_DEFAULTS },
+    plantMaterials: { ...PLANT_MATERIALS_DEFAULTS },
+    permits: { ...PERMITS_DEFAULTS },
+    training: TRAINING_DEFAULT,
+    ppe: { taskSpecific: PPE_TASK_SPECIFIC_DEFAULT },
+    emergency: { ...EMERGENCY_DEFAULTS },
+    communication: { ...COMMUNICATION_DEFAULTS },
+    methodStatement: { selected: [], custom: [], sequenceNotes: '' },
+  }
+}
+
+// Pulls just those sections out of a full RAMS record -- used by "Save as
+// template" on an existing RAMS in Records, the inverse of
+// createDraftFromTemplate below.
+export function extractTemplateContent(source) {
+  const clone = JSON.parse(JSON.stringify(source || {}))
+  const content = {}
+  for (const key of TEMPLATE_SECTIONS) {
+    content[key] = clone[key]
+  }
+  return content
+}
+
+// Builds a new, fully independent RAMS draft from a saved template. Same
+// idea as createDuplicateDraft, but the starting point is a curated
+// template's content rather than a specific previous job -- so there's
+// nothing to clear beyond what createInitialData() already leaves blank.
+export function createDraftFromTemplate(template) {
+  const base = createInitialData()
+  const content = JSON.parse(JSON.stringify(template?.content || {}))
+  return {
+    ...base,
+    ...content,
+    meta: {
+      ...base.meta,
+      startedFromTemplate: { id: template?.id || null, name: template?.name || '' },
+    },
+  }
+}

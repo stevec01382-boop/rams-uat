@@ -36,15 +36,19 @@ verification and email — no separate backend/database to run.
   template's structure, not a substitute for sign-off, exactly as the original template's own "how
   to use this appendix" notes require.
 - `src/pages/AdminLibrary.jsx` — the Admin-only Library management page.
+- `src/pages/Templates.jsx` / `src/pages/AdminTemplates.jsx` — the job-type template picker (any
+  signed-in user) and the Admin-only template editor.
 - `netlify/functions/` —
-  - `submit-rams` / `list-rams` / `get-rams` / `resend-rams` — the RAMS records store and Records
-    page, all requiring a signed-in User or Admin.
+  - `submit-rams` / `list-rams` / `get-rams` / `get-rams-data` / `resend-rams` / `reinstate-rams` —
+    the RAMS records store, revisions and Records page, all requiring a signed-in User or Admin.
   - `get-library` — the live library, requiring a signed-in User or Admin.
   - `admin-save-library` / `admin-library-history` / `get-library-file` — Admin-only library
     editing, change history and attached source-document downloads.
+  - `list-templates` / `get-template` — the saved job-type templates, requiring a signed-in User or
+    Admin. `save-template` / `delete-template` — Admin-only template creation, editing and removal.
   - `lib/auth.js` — verifies the Entra ID access token sent with every request and checks the
     caller's App Role.
-  - `lib/shared.js` / `lib/library.js` — storage and email helpers.
+  - `lib/shared.js` / `lib/library.js` / `lib/templates.js` — storage and email helpers.
 
 ## Local development
 
@@ -212,6 +216,30 @@ Unlike a revision, a duplicate has **no link back to the source RAMS** — it do
 record's history, doesn't mark anything as superseded, and the generated PDF carries no reference
 to where it came from. It's a completely independent record from the moment it's created, which is
 the point: it's a new job for a new client/site, not a new issue of the old one.
+
+### Job-type templates
+
+Duplicate starts from one specific previous job. **Templates** are for recurring *job types* —
+new builds, refurbs, access control gate installs — that any engineer can start from, not just one
+that happens to have been done before.
+
+Any signed-in user sees a **Templates** link in the top bar, leading to a picker of saved templates.
+Choosing one opens a new RAMS with the scope, risk assessments, COSHH, method statement, generic
+practices, PPE, emergency arrangements, permits, training and communication sections already
+filled in from the template — everything else (client, job reference, site, personnel, signatures)
+starts blank, exactly as with Duplicate, and a template-based RAMS carries no link back to the
+template either.
+
+Only Admins can create or edit templates, in two ways:
+
+- **Templates admin** (top bar, Admins only) has a **+ New template** button that opens the same
+  step-by-step sections as the main builder (minus project details and sign-off, since a template
+  has neither), so a template can be built from scratch and named/described for the picker.
+- **Save as template** on any row in Records (Admins only) takes that RAMS's working sections and
+  saves them under a new template name — the fastest way to turn a real job into a reusable
+  starting point.
+
+Templates admin also lists every saved template with **Edit** and **Delete**.
 
 ## Library management (Admin)
 

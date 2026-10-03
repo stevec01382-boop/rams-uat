@@ -15,8 +15,12 @@ export default function Topbar({ route, navigate, saveState }) {
       <nav>
         <a href="#/" className={route === 'home' || route === '' ? 'active' : ''}>Home</a>
         <a href="#/records" className={route === 'records' ? 'active' : ''}>Records</a>
+        <a href="#/templates" className={route === 'templates' ? 'active' : ''}>Templates</a>
         {isAdmin && (
           <a href="#/admin/library" className={route === 'admin/library' ? 'active' : ''}>Library</a>
+        )}
+        {isAdmin && (
+          <a href="#/admin/templates" className={route === 'admin/templates' ? 'active' : ''}>Templates admin</a>
         )}
         <button className={route.startsWith('new') || route.startsWith('edit') ? 'active' : ''} onClick={() => navigate('/new')}>
           New RAMS

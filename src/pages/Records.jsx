@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react'
-import { listRams, resendRams, openRamsPdf, fetchRamsData, reinstateRams } from '../lib/api.js'
+import { listRams, resendRams, openRamsPdf, fetchRamsData, reinstateRams, saveTemplate } from '../lib/api.js'
 import { useAuth } from '../auth/AuthProvider.jsx'
-import { createRevisionDraft, createDuplicateDraft } from '../state/initialData.js'
+import { createRevisionDraft, createDuplicateDraft, extractTemplateContent } from '../state/initialData.js'
 
 function groupByLineage(rows) {
   const byLineage = new Map()
@@ -31,7 +31,7 @@ function StatusBadge({ r }) {
 }
 
 export default function Records({ onCreateRevision, onDuplicate }) {
-  const { getAccessToken, devMode } = useAuth()
+  const { getAccessToken, devMode, isAdmin } = useAuth()
   const [query, setQuery] = useState('')
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
@@ -41,6 +41,7 @@ export default function Records({ onCreateRevision, onDuplicate }) {
   const [revisionState, setRevisionState] = useState({})
   const [duplicateState, setDuplicateState] = useState({})
   const [reinstateState, setReinstateState] = useState({})
+  const [templateState, setTemplateState] = useState({})
   const [expanded, setExpanded] = useState({})
 
   const load = useCallback(async () => {
@@ -108,6 +109,26 @@ export default function Records({ onCreateRevision, onDuplicate }) {
     }
   }
 
+  async function handleSaveAsTemplate(r) {
+    const name = window.prompt('Template name (e.g. "New Build", "Access Control Gate Install"):', `${r.clientName || ''} ${r.jobRef || ''}`.trim())
+    if (!name || !name.trim()) return
+    const description = window.prompt('Short description (optional):', '') || ''
+    setTemplateState(s => ({ ...s, [r.id]: 'loading' }))
+    setError('')
+    try {
+      const token = devMode ? null : await getAccessToken()
+      const res = await fetchRamsData(r.id, token)
+      if (!res.ok) throw new Error(res.body?.message || `Server returned ${res.status}`)
+      const content = extractTemplateContent(res.body.data)
+      const saveRes = await saveTemplate({ name: name.trim(), description, content, token })
+      if (!saveRes.ok) throw new Error(saveRes.body?.message || `Server returned ${saveRes.status}`)
+      setTemplateState(s => ({ ...s, [r.id]: 'saved' }))
+    } catch (e) {
+      setTemplateState(s => ({ ...s, [r.id]: 'error' }))
+      setError(e.message || 'Could not save this RAMS as a template.')
+    }
+  }
+
   async function handleReinstate(id) {
     setReinstateState(s => ({ ...s, [id]: 'working' }))
     setError('')
@@ -138,6 +159,11 @@ export default function Records({ onCreateRevision, onDuplicate }) {
         <button className="btn btn-secondary btn-sm" onClick={() => handleDuplicate(r.id)} disabled={duplicateState[r.id] === 'loading'}>
           {duplicateState[r.id] === 'loading' ? 'Loading…' : duplicateState[r.id] === 'error' ? 'Failed — retry' : 'Duplicate as new RAMS'}
         </button>{' '}
+        {isAdmin && (
+          <button className="btn btn-secondary btn-sm" onClick={() => handleSaveAsTemplate(r)} disabled={templateState[r.id] === 'loading'}>
+            {templateState[r.id] === 'loading' ? 'Saving…' : templateState[r.id] === 'saved' ? 'Saved ✓' : templateState[r.id] === 'error' ? 'Failed — retry' : 'Save as template'}
+          </button>
+        )}{' '}
         {allowRevision && (
           <button className="btn btn-primary btn-sm" onClick={() => handleCreateRevision(r.id)} disabled={revisionState[r.id] === 'loading'}>
             {revisionState[r.id] === 'loading' ? 'Loading…' : revisionState[r.id] === 'error' ? 'Failed — retry' : 'Create revision'}
@@ -162,6 +188,7 @@ export default function Records({ onCreateRevision, onDuplicate }) {
         a starting point, but creates a completely separate, unlinked record with the client/site/personnel details
         cleared for you to fill in. Expand <strong>earlier revisions</strong> on a row to see its history, and use
         <strong> Reinstate as latest</strong> there to undo a revision and bring an earlier issue back to the top.
+        {isAdmin && <> Admins can also use <strong>Save as template</strong> to turn a row into a reusable job-type template under <strong>Templates</strong>.</>}
       </p>
       <div className="records-toolbar">
         <input

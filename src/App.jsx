@@ -4,6 +4,8 @@ import Home from './pages/Home.jsx'
 import Builder from './pages/Builder.jsx'
 import Records from './pages/Records.jsx'
 import AdminLibrary from './pages/AdminLibrary.jsx'
+import Templates from './pages/Templates.jsx'
+import AdminTemplates from './pages/AdminTemplates.jsx'
 import { createInitialData } from './state/initialData.js'
 import { LibraryProvider } from './state/LibraryContext.jsx'
 import { useAuth } from './auth/AuthProvider.jsx'
@@ -70,15 +72,26 @@ export default function App() {
     navigate('/new')
   }, [navigate])
 
+  const startFromTemplate = useCallback((templateDraft) => {
+    setData(templateDraft)
+    navigate('/new')
+  }, [navigate])
+
   let body
   if (route === 'home' || route === '') {
-    body = <Home onStart={() => navigate('/new')} onRecords={() => navigate('/records')} hasDraft={Boolean(data?.meta?.id)} data={data} />
+    body = <Home onStart={() => navigate('/new')} onRecords={() => navigate('/records')} onTemplates={() => navigate('/templates')} hasDraft={Boolean(data?.meta?.id)} data={data} />
   } else if (route === 'records') {
     body = <Records onBack={() => navigate('/')} onCreateRevision={startRevision} onDuplicate={startDuplicate} />
+  } else if (route === 'templates') {
+    body = <Templates onBack={() => navigate('/')} onUseTemplate={startFromTemplate} />
   } else if (route === 'admin/library') {
     body = isAdmin
       ? <AdminLibrary />
-      : <Home onStart={() => navigate('/new')} onRecords={() => navigate('/records')} hasDraft={Boolean(data?.meta?.id)} data={data} />
+      : <Home onStart={() => navigate('/new')} onRecords={() => navigate('/records')} onTemplates={() => navigate('/templates')} hasDraft={Boolean(data?.meta?.id)} data={data} />
+  } else if (route === 'admin/templates') {
+    body = isAdmin
+      ? <AdminTemplates />
+      : <Home onStart={() => navigate('/new')} onRecords={() => navigate('/records')} onTemplates={() => navigate('/templates')} hasDraft={Boolean(data?.meta?.id)} data={data} />
   } else {
     body = <Builder data={data} setData={setData} onExit={() => navigate('/')} onNewDraft={resetDraft} />
   }

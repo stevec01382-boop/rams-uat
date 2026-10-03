@@ -31,6 +31,14 @@ export default function ProjectStep({ data, patch, setSection }) {
           operative and the QA reviewer will need to sign again before this revision can be sent.
         </div>
       )}
+      {data.meta.startedFromTemplate && (
+        <div className="banner info" style={{ marginBottom: 16 }}>
+          This RAMS was started from the <strong>{data.meta.startedFromTemplate.name}</strong> template. The scope,
+          risk assessments, COSHH, method statement and other working sections have been pre-filled from that
+          template — check they still match this job, then fill in the client, site, project manager and personnel
+          details below.
+        </div>
+      )}
       {data.meta.duplicatedFrom && (
         <div className="banner info" style={{ marginBottom: 16 }}>
           This RAMS was duplicated from an earlier job{data.meta.duplicatedFrom.jobRef ? ` (${data.meta.duplicatedFrom.jobRef})` : ''}

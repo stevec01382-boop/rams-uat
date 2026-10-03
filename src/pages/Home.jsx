@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default function Home({ onStart, onRecords, hasDraft, data }) {
+export default function Home({ onStart, onRecords, onTemplates, hasDraft, data }) {
   const draftLabel = hasDraft && data?.project?.clientName
     ? `Continue draft: ${data.project.clientName}${data.project.jobRef ? ' (' + data.project.jobRef + ')' : ''}`
     : 'Continue saved draft'
@@ -16,6 +16,11 @@ export default function Home({ onStart, onRecords, hasDraft, data }) {
         </p>
         <div style={{ display: 'flex', gap: 12, marginTop: 22, flexWrap: 'wrap' }}>
           <button className="btn btn-primary" onClick={onStart}>Start a new RAMS</button>
+          {onTemplates && (
+            <button className="btn btn-secondary" style={{ background: 'transparent', color: '#fff', borderColor: 'rgba(255,255,255,0.3)' }} onClick={onTemplates}>
+              Start from a template
+            </button>
+          )}
           {hasDraft && (
             <button className="btn btn-secondary" style={{ background: 'rgba(255,255,255,0.08)', color: '#fff', borderColor: 'rgba(255,255,255,0.3)' }} onClick={onStart}>
               {draftLabel}
