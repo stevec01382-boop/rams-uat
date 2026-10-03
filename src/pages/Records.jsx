@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react'
 import { listRams, resendRams, openRamsPdf, fetchRamsData, reinstateRams } from '../lib/api.js'
 import { useAuth } from '../auth/AuthProvider.jsx'
-import { createRevisionDraft } from '../state/initialData.js'
+import { createRevisionDraft, createDuplicateDraft } from '../state/initialData.js'
 
 function groupByLineage(rows) {
   const byLineage = new Map()
@@ -30,7 +30,7 @@ function StatusBadge({ r }) {
   )
 }
 
-export default function Records({ onCreateRevision }) {
+export default function Records({ onCreateRevision, onDuplicate }) {
   const { getAccessToken, devMode } = useAuth()
   const [query, setQuery] = useState('')
   const [rows, setRows] = useState([])
@@ -39,6 +39,7 @@ export default function Records({ onCreateRevision }) {
   const [resendState, setResendState] = useState({})
   const [viewState, setViewState] = useState({})
   const [revisionState, setRevisionState] = useState({})
+  const [duplicateState, setDuplicateState] = useState({})
   const [reinstateState, setReinstateState] = useState({})
   const [expanded, setExpanded] = useState({})
 
@@ -92,6 +93,21 @@ export default function Records({ onCreateRevision }) {
     }
   }
 
+  async function handleDuplicate(id) {
+    setDuplicateState(s => ({ ...s, [id]: 'loading' }))
+    setError('')
+    try {
+      const token = devMode ? null : await getAccessToken()
+      const res = await fetchRamsData(id, token)
+      if (!res.ok) throw new Error(res.body?.message || `Server returned ${res.status}`)
+      const draft = createDuplicateDraft(res.body.data)
+      onDuplicate(draft)
+    } catch (e) {
+      setDuplicateState(s => ({ ...s, [id]: 'error' }))
+      setError(e.message || 'Could not load this RAMS to duplicate.')
+    }
+  }
+
   async function handleReinstate(id) {
     setReinstateState(s => ({ ...s, [id]: 'working' }))
     setError('')
@@ -119,6 +135,9 @@ export default function Records({ onCreateRevision }) {
         <button className="btn btn-secondary btn-sm" onClick={() => handleResend(r.id)} disabled={resendState[r.id] === 'sending'}>
           {resendState[r.id] === 'sending' ? 'Sending…' : resendState[r.id] === 'sent' ? 'Sent ✓' : resendState[r.id] === 'error' ? 'Failed — retry' : 'Resend email'}
         </button>{' '}
+        <button className="btn btn-secondary btn-sm" onClick={() => handleDuplicate(r.id)} disabled={duplicateState[r.id] === 'loading'}>
+          {duplicateState[r.id] === 'loading' ? 'Loading…' : duplicateState[r.id] === 'error' ? 'Failed — retry' : 'Duplicate as new RAMS'}
+        </button>{' '}
         {allowRevision && (
           <button className="btn btn-primary btn-sm" onClick={() => handleCreateRevision(r.id)} disabled={revisionState[r.id] === 'loading'}>
             {revisionState[r.id] === 'loading' ? 'Loading…' : revisionState[r.id] === 'error' ? 'Failed — retry' : 'Create revision'}
@@ -137,9 +156,11 @@ export default function Records({ onCreateRevision }) {
     <div className="page">
       <h2>Records</h2>
       <p className="card-help">
-        Each row is the latest issue of a RAMS. Use <strong>Create revision</strong> to open a new copy pre-filled with
-        everything from the previous issue — just review what's changed and get it re-signed, rather than rebuilding
-        it from scratch. Expand <strong>earlier revisions</strong> on a row to see its history, and use
+        Each row is the latest issue of a RAMS. Use <strong>Create revision</strong> to reissue the <em>same</em> job
+        with updates — it links back to this record and replaces it. Use <strong>Duplicate as new RAMS</strong> when
+        it's the same type of job for a different client or site — it carries over the scope and risk assessments as
+        a starting point, but creates a completely separate, unlinked record with the client/site/personnel details
+        cleared for you to fill in. Expand <strong>earlier revisions</strong> on a row to see its history, and use
         <strong> Reinstate as latest</strong> there to undo a revision and bring an earlier issue back to the top.
       </p>
       <div className="records-toolbar">

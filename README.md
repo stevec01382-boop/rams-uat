@@ -194,6 +194,25 @@ If a revision was created by mistake, expand **earlier revisions** on that row a
 **Reinstate as latest** on the one that should be active again — it doesn't delete anything, it
 just swaps which issue in that history is shown as the current one.
 
+### Duplicate as new RAMS
+
+Revisions are for reissuing the *same* job (same client, same site) with updates. For a different
+situation — the same type of job carried out again for a different client, or the same client at a
+different site — use **Duplicate as new RAMS** instead, available on every row in Records (both
+the latest issue and any entry in its revision history).
+
+Duplicating carries over everything that describes the *work*: scope, risk assessment and COSHH
+selections, the method statement, generic practices, PPE, emergency arrangements, permits,
+training and communication arrangements. It clears everything that identifies *who and where*:
+client name, job reference, site name, location, start date/time, project manager details,
+personnel list, and every signature (operatives, QA reviewer, client rep) — all reset ready for
+fresh entry, with the revision label reset to `Rev0`.
+
+Unlike a revision, a duplicate has **no link back to the source RAMS** — it doesn't appear in that
+record's history, doesn't mark anything as superseded, and the generated PDF carries no reference
+to where it came from. It's a completely independent record from the moment it's created, which is
+the point: it's a new job for a new client/site, not a new issue of the old one.
+
 ## Library management (Admin)
 
 Signed-in Admins see a **Library** link in the top bar leading to three editable libraries (Risk

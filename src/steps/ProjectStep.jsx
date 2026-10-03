@@ -31,6 +31,15 @@ export default function ProjectStep({ data, patch, setSection }) {
           operative and the QA reviewer will need to sign again before this revision can be sent.
         </div>
       )}
+      {data.meta.duplicatedFrom && (
+        <div className="banner info" style={{ marginBottom: 16 }}>
+          This RAMS was duplicated from an earlier job{data.meta.duplicatedFrom.jobRef ? ` (${data.meta.duplicatedFrom.jobRef})` : ''}
+          {data.meta.duplicatedFrom.siteName ? ` at ${data.meta.duplicatedFrom.siteName}` : ''}. The scope, risk assessments, COSHH,
+          method statement and other working sections have been carried over as a starting point — this is a separate, independent
+          RAMS, not linked to that job, so fill in the client, site, project manager and personnel details below, and check the
+          scope and selections still fit before sending.
+        </div>
+      )}
       <SectionCard
         title="Project Details"
         help='Complete every field below before this RAMS is issued. Do not leave location, phone or email blank or generic (e.g. "as per proposal") — these were flagged as non-conformances in previous internal audits.'

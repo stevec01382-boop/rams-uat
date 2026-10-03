@@ -164,3 +164,58 @@ export function createRevisionDraft(source) {
 
   return clone
 }
+
+// Builds a new, fully independent RAMS from a previous one -- for the same
+// job carried out again for a different client/site (not a new issue of the
+// SAME document, which is what createRevisionDraft is for). Everything that
+// describes the WORK is carried over -- scope, RA/COSHH/method statement
+// selections, generic practices, PPE, emergency arrangements, permits,
+// training, communication -- since that's usually identical or near-identical
+// for the same type of job. Everything that identifies WHO and WHERE is
+// cleared, ready for fresh entry: client, job reference, site, location,
+// start date/time, project manager, personnel/operatives and distribution
+// recipients. There is no lineage link to the source RAMS -- the two stand
+// as separate records in Records, since neither supersedes the other.
+export function createDuplicateDraft(source) {
+  const clone = JSON.parse(JSON.stringify(source))
+
+  clone.meta = {
+    id: newId(),
+    createdAt: new Date().toISOString(),
+    formVersion: source.meta?.formVersion || 1,
+    status: 'draft',
+    duplicatedFrom: {
+      id: source.meta?.id || null,
+      clientName: source.project?.clientName || '',
+      jobRef: source.project?.jobRef || '',
+      siteName: source.project?.siteName || '',
+    },
+  }
+
+  clone.project = {
+    ...clone.project,
+    clientName: '',
+    jobRef: '',
+    revision: 'Rev0',
+    issueDate: today(),
+    siteName: '',
+    location: '',
+    startDate: '',
+    startTime: '',
+    pmName: '',
+    pmPhone: '',
+    pmEmail: '',
+    personnel: [{ id: newId(), name: '', role: '' }],
+    qaReviewDate: '',
+  }
+
+  clone.signOff = {
+    operatives: [blankOperative()],
+    reviewer: { ...(clone.signOff?.reviewer || {}), name: '', role: 'SHEQ / QA Reviewer', signature: null, signedAt: null },
+    clientRep: { enabled: false, name: '', role: '', signature: null, signedAt: null },
+  }
+
+  clone.distribution = { recipients: '', message: '' }
+
+  return clone
+}

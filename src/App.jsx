@@ -65,11 +65,16 @@ export default function App() {
     navigate('/revise')
   }, [navigate])
 
+  const startDuplicate = useCallback((duplicateDraft) => {
+    setData(duplicateDraft)
+    navigate('/new')
+  }, [navigate])
+
   let body
   if (route === 'home' || route === '') {
     body = <Home onStart={() => navigate('/new')} onRecords={() => navigate('/records')} hasDraft={Boolean(data?.meta?.id)} data={data} />
   } else if (route === 'records') {
-    body = <Records onBack={() => navigate('/')} onCreateRevision={startRevision} />
+    body = <Records onBack={() => navigate('/')} onCreateRevision={startRevision} onDuplicate={startDuplicate} />
   } else if (route === 'admin/library') {
     body = isAdmin
       ? <AdminLibrary />
