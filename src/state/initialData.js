@@ -70,6 +70,9 @@ export function createInitialData() {
       status: 'draft', // draft | completed
     },
     project: {
+      jobType: '', // 'service' (direct to client) | 'project' (client or main contractor)
+      hasPrincipalContractor: false,
+      principalContractor: '',
       clientName: '',
       jobRef: '',
       revision: 'Rev0',
@@ -194,6 +197,12 @@ export function createDuplicateDraft(source) {
 
   clone.project = {
     ...clone.project,
+    // Who the work is for is part of "who and where", so it is cleared with
+    // the client -- a duplicated job may be a service call for one client
+    // and a project under a main contractor for the next.
+    jobType: '',
+    hasPrincipalContractor: false,
+    principalContractor: '',
     clientName: '',
     jobRef: '',
     revision: 'Rev0',

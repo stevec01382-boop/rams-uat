@@ -172,6 +172,13 @@ export function buildDocDefinition(data, library) {
   const coverRows = [
     ['Client / Project', project.clientName],
     ['Job Reference', project.jobRef],
+    ...(project.jobType === 'service' ? [['Job Type', 'Service call — direct to client']] : []),
+    ...(project.jobType === 'project'
+      ? [
+          ['Job Type', 'Project'],
+          ['Principal Contractor', project.hasPrincipalContractor && project.principalContractor ? project.principalContractor : 'None — working direct for the client'],
+        ]
+      : []),
     ['Revision', project.revision],
     ['Issue Date', fmtDate(project.issueDate)],
     ['Client / Site Name', project.siteName],

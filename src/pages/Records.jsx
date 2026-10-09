@@ -21,6 +21,16 @@ function groupByLineage(rows) {
   return groups
 }
 
+function TypeCell({ r }) {
+  if (!r.jobType) return <span style={{ color: '#9a97a3' }}>—</span>
+  return (
+    <>
+      <span className="pill">{r.jobType === 'service' ? 'Service' : 'Project'}</span>
+      {r.principalContractor && <div style={{ fontSize: '0.75rem', color: '#5B5866', marginTop: 2 }}>via {r.principalContractor}</div>}
+    </>
+  )
+}
+
 function StatusBadge({ r }) {
   return (
     <>
@@ -43,6 +53,7 @@ export default function Records({ onCreateRevision, onDuplicate }) {
   const [reinstateState, setReinstateState] = useState({})
   const [templateState, setTemplateState] = useState({})
   const [expanded, setExpanded] = useState({})
+  const [typeFilter, setTypeFilter] = useState('all') // all | service | project
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -59,7 +70,10 @@ export default function Records({ onCreateRevision, onDuplicate }) {
 
   useEffect(() => { load() }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const groups = useMemo(() => groupByLineage(rows), [rows])
+  const groups = useMemo(() => {
+    const all = groupByLineage(rows)
+    return typeFilter === 'all' ? all : all.filter(g => g.latest.jobType === typeFilter)
+  }, [rows, typeFilter])
 
   async function handleResend(id) {
     setResendState(s => ({ ...s, [id]: 'sending' }))
@@ -149,7 +163,7 @@ export default function Records({ onCreateRevision, onDuplicate }) {
 
   function rowActions(r, { allowRevision, allowReinstate }) {
     return (
-      <td style={{ whiteSpace: 'nowrap' }}>
+      <td style={{ minWidth: 280 }}>
         <button className="btn btn-secondary btn-sm" onClick={() => handleView(r.id)} disabled={viewState[r.id] === 'opening'}>
           {viewState[r.id] === 'opening' ? 'Opening…' : viewState[r.id] === 'error' ? 'Failed — retry' : 'View PDF'}
         </button>{' '}
@@ -192,11 +206,16 @@ export default function Records({ onCreateRevision, onDuplicate }) {
       </p>
       <div className="records-toolbar">
         <input
-          placeholder="Search by client, job ref or site..."
+          placeholder="Search by client, job ref, site or contractor..."
           value={query}
           onChange={e => setQuery(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && load()}
         />
+        <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} aria-label="Filter by type of work" style={{ width: 'auto' }}>
+          <option value="all">All types</option>
+          <option value="service">Service calls</option>
+          <option value="project">Projects</option>
+        </select>
         <button className="btn btn-secondary btn-sm" onClick={load}>Search</button>
       </div>
 
@@ -206,16 +225,18 @@ export default function Records({ onCreateRevision, onDuplicate }) {
       {!loading && !error && groups.length === 0 && <p className="card-help">No stored RAMS match your search.</p>}
 
       {groups.length > 0 && (
+        <div style={{ overflowX: 'auto' }}>
         <table className="simple">
           <thead>
             <tr>
-              <th>Client / Project</th><th>Job Ref</th><th>Site</th><th>Issue Date</th><th>Status</th><th>Signed by</th><th></th>
+              <th>Type</th><th>Client / Project</th><th>Job Ref</th><th>Site</th><th>Issue Date</th><th>Status</th><th>Signed by</th><th></th>
             </tr>
           </thead>
           <tbody>
             {groups.map(({ key, latest, history }) => (
               <React.Fragment key={key}>
                 <tr>
+                  <td><TypeCell r={latest} /></td>
                   <td>{latest.clientName}</td>
                   <td>{latest.jobRef}</td>
                   <td>{latest.siteName}</td>
@@ -226,7 +247,7 @@ export default function Records({ onCreateRevision, onDuplicate }) {
                 </tr>
                 {history.length > 0 && (
                   <tr>
-                    <td colSpan={7} style={{ paddingTop: 0, paddingBottom: 0 }}>
+                    <td colSpan={8} style={{ paddingTop: 0, paddingBottom: 0 }}>
                       <button className="btn-ghost" style={{ fontSize: '0.78rem' }} onClick={() => toggleExpanded(key)}>
                         {expanded[key] ? '▾' : '▸'} {history.length} earlier revision{history.length > 1 ? 's' : ''}
                       </button>
@@ -235,6 +256,7 @@ export default function Records({ onCreateRevision, onDuplicate }) {
                 )}
                 {expanded[key] && history.map(r => (
                   <tr key={r.id} style={{ opacity: 0.75 }}>
+                    <td><TypeCell r={r} /></td>
                     <td>↳ {r.clientName}</td>
                     <td>{r.jobRef}</td>
                     <td>{r.siteName}</td>
@@ -248,6 +270,7 @@ export default function Records({ onCreateRevision, onDuplicate }) {
             ))}
           </tbody>
         </table>
+        </div>
       )}
     </div>
   )

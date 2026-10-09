@@ -17,6 +17,8 @@ export function summarize(data, id) {
     id,
     clientName: data?.project?.clientName || '(untitled)',
     jobRef: data?.project?.jobRef || '',
+    jobType: data?.project?.jobType || '',
+    principalContractor: data?.project?.hasPrincipalContractor ? (data?.project?.principalContractor || '') : '',
     siteName: data?.project?.siteName || '',
     issueDate: data?.project?.issueDate || '',
     revision: data?.project?.revision || '',
@@ -61,7 +63,8 @@ export async function sendRamsEmail({ recipients, message, pdfBase64, data }) {
 
   const html = `
     <p>The signed Risk Assessment &amp; Method Statement for <strong>${escapeHtml(jobLabel)}</strong> is attached.</p>
-    <p><strong>Site:</strong> ${escapeHtml(data?.project?.siteName || '—')}<br/>
+    <p>${data?.project?.jobType ? `<strong>Job type:</strong> ${data.project.jobType === 'service' ? 'Service call' : 'Project'}${data.project.hasPrincipalContractor && data.project.principalContractor ? ` (principal contractor: ${escapeHtml(data.project.principalContractor)})` : ''}<br/>` : ''}
+    <strong>Site:</strong> ${escapeHtml(data?.project?.siteName || '—')}<br/>
     <strong>Location:</strong> ${escapeHtml(data?.project?.location || '—')}<br/>
     <strong>Proposed start:</strong> ${escapeHtml(data?.project?.startDate || '—')} ${escapeHtml(data?.project?.startTime || '')}</p>
     ${message ? `<p>${escapeHtml(message).replace(/\n/g, '<br/>')}</p>` : ''}

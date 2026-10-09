@@ -12,7 +12,7 @@ export default async (req) => {
 
   const items = q
     ? list.filter(r =>
-        [r.clientName, r.jobRef, r.siteName].some(f => (f || '').toLowerCase().includes(q))
+        [r.clientName, r.jobRef, r.siteName, r.principalContractor].some(f => (f || '').toLowerCase().includes(q))
       )
     : list
 

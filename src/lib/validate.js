@@ -11,7 +11,8 @@ export function stepStatus(id, data) {
   switch (id) {
     case 'project': {
       const p = data.project
-      const required = [p.clientName, p.jobRef, p.siteName, p.location, p.pmName, p.pmPhone, p.pmEmail]
+      const required = [p.jobType, p.clientName, p.jobRef, p.siteName, p.location, p.pmName, p.pmPhone, p.pmEmail]
+      if (p.jobType === 'project' && p.hasPrincipalContractor) required.push(p.principalContractor)
       const okCount = required.filter(filled).length
       if (okCount === required.length) return 'done'
       if (okCount === 0) return 'empty'
@@ -63,6 +64,10 @@ export function stepStatus(id, data) {
 export function overallReadiness(data) {
   const issues = []
   if (!data.project.clientName || !data.project.jobRef) issues.push('Project/client name and job reference are required.')
+  if (!data.project.jobType) issues.push('Select whether this RAMS is for a Service call or a Project.')
+  if (data.project.jobType === 'project' && data.project.hasPrincipalContractor && !(data.project.principalContractor || '').trim()) {
+    issues.push('A principal contractor is ticked but no name has been entered.')
+  }
   if (!data.scope.description) issues.push('Scope of works has not been described.')
   if (data.riskAssessments.selected.length + data.riskAssessments.custom.length === 0) {
     issues.push('No Risk Assessments attached -- select at least one from the library or add a custom one.')

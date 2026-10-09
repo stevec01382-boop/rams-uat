@@ -9,6 +9,17 @@ export default function ProjectStep({ data, patch, setSection }) {
     patch('project', { [field]: value })
   }
 
+  const jobType = p.jobType || ''
+  function setJobType(value) {
+    // Service calls never have a principal contractor, so clear it if the
+    // user switches over rather than leaving a hidden value behind.
+    if (value === 'service') patch('project', { jobType: value, hasPrincipalContractor: false, principalContractor: '' })
+    else patch('project', { jobType: value })
+  }
+  function setPC(on) {
+    patch('project', on ? { hasPrincipalContractor: true } : { hasPrincipalContractor: false, principalContractor: '' })
+  }
+
   function updatePersonnel(id, field, value) {
     setSection('project', {
       ...p,
@@ -48,6 +59,42 @@ export default function ProjectStep({ data, patch, setSection }) {
           scope and selections still fit before sending.
         </div>
       )}
+      <SectionCard
+        title="Type of Work"
+        help="Service calls are arranged directly between Hutchi and the client. Projects may be for the client directly, or under a main / principal contractor."
+      >
+        <div className="choice-cards" role="radiogroup" aria-label="Type of work">
+          <label className={`choice-card${jobType === 'service' ? ' selected' : ''}`}>
+            <input type="radio" name="jobType" checked={jobType === 'service'} onChange={() => setJobType('service')} />
+            <span className="choice-title">Service call</span>
+            <span className="choice-sub">Direct between Hutchi and the client</span>
+          </label>
+          <label className={`choice-card${jobType === 'project' ? ' selected' : ''}`}>
+            <input type="radio" name="jobType" checked={jobType === 'project'} onChange={() => setJobType('project')} />
+            <span className="choice-title">Project</span>
+            <span className="choice-sub">For the client, or via a main contractor</span>
+          </label>
+        </div>
+        {!jobType && <p className="card-help" style={{ marginTop: 10, marginBottom: 0 }}>Choose one to continue — it appears on the RAMS cover page.</p>}
+        {jobType === 'project' && (
+          <div style={{ marginTop: 14 }}>
+            <label className="checkbox-row" style={{ marginBottom: 12 }}>
+              <input type="checkbox" checked={Boolean(p.hasPrincipalContractor)} onChange={e => setPC(e.target.checked)} />
+              A principal / main contractor is involved on this project
+            </label>
+            {p.hasPrincipalContractor && (
+              <Text
+                label="Principal contractor"
+                hint="Company we are working under, as it should appear on the RAMS."
+                value={p.principalContractor || ''}
+                onChange={v => setP('principalContractor', v)}
+                placeholder="e.g. Kier Construction Ltd"
+              />
+            )}
+          </div>
+        )}
+      </SectionCard>
+
       <SectionCard
         title="Project Details"
         help='Complete every field below before this RAMS is issued. Do not leave location, phone or email blank or generic (e.g. "as per proposal") — these were flagged as non-conformances in previous internal audits.'

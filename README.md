@@ -217,6 +217,23 @@ record's history, doesn't mark anything as superseded, and the generated PDF car
 to where it came from. It's a completely independent record from the moment it's created, which is
 the point: it's a new job for a new client/site, not a new issue of the old one.
 
+### Type of work: Service call or Project
+
+The first card on the Project step asks whether the RAMS is for a **Service call**
+(arranged directly between Hutchi and the client) or a **Project** (for the client
+directly, or under a main contractor). Choosing *Project* reveals a checkbox,
+"A principal / main contractor is involved", which in turn reveals a name field.
+
+The choice is required before a RAMS counts as complete (it's listed on the Review
+checklist), appears on the PDF cover table (Job Type, plus Principal Contractor for
+projects), is mentioned in the email body, and shows as a **Type** column on Records
+with an "All types / Service calls / Projects" filter. The search box also matches the
+principal contractor's name. RAMS issued before this feature simply show "—" and are
+unaffected until someone creates a revision of them.
+
+Revisions keep the type and contractor; **Duplicate as new RAMS** clears both (the next
+job may be a different type); templates never contain them.
+
 ### Job-type templates
 
 Duplicate starts from one specific previous job. **Templates** are for recurring *job types* —
