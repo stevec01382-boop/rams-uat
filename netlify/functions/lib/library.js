@@ -13,8 +13,13 @@ const SEEDS = {
   ms: SEED_MS,
 }
 
+// Strong consistency: Netlify Blobs reads are "eventually consistent" by
+// default, meaning a read within ~60 seconds of a write can return the
+// previous copy. This app reads a list, changes it and writes it back, and
+// refreshes straight after saving, so stale reads made newly saved entries
+// seem to vanish (and could let a second save overwrite the first).
 export function libraryStore() {
-  return getStore('rams-library')
+  return getStore({ name: 'rams-library', consistency: 'strong' })
 }
 
 function seedEntry(item) {
@@ -29,6 +34,11 @@ export async function readLibraryList(store, kind) {
   if (!key) throw new Error(`Unknown library kind: ${kind}`)
   const existing = await store.get(key, { type: 'json' })
   if (Array.isArray(existing)) return existing
+  if (existing !== null && existing !== undefined) {
+    // Something is stored under this key but it isn't a list. Re-seeding here
+    // would overwrite every admin edit, so stop and let someone look at it.
+    throw new Error(`Library data for "${kind}" is not in the expected format; refusing to overwrite it.`)
+  }
   const seeded = SEEDS[kind].map(seedEntry)
   await store.setJSON(key, seeded)
   return seeded

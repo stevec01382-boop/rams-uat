@@ -1,7 +1,12 @@
 import { getStore } from '@netlify/blobs'
 
+// Strong consistency: Netlify Blobs reads are "eventually consistent" by
+// default, meaning a read within ~60 seconds of a write can return the
+// previous copy. This app reads a list, changes it and writes it back, and
+// refreshes straight after saving, so stale reads made newly saved entries
+// seem to vanish (and could let a second save overwrite the first).
 export function ramsStore() {
-  return getStore('rams-submissions')
+  return getStore({ name: 'rams-submissions', consistency: 'strong' })
 }
 
 export function json(status, body) {
