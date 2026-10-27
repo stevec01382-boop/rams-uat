@@ -1,6 +1,13 @@
 import React from 'react'
+import { useLibrary } from '../state/LibraryContext.jsx'
+import { STEPS } from '../state/steps.js'
 
 export default function Home({ onStart, onRecords, onTemplates, hasDraft, data }) {
+  // Live counts from the shared library, so entries an admin adds show up here
+  // straight away. Archived entries are left out because they no longer appear
+  // in the pickers when someone builds a RAMS.
+  const { riskAssessments, coshhSheets, methodStatements } = useLibrary()
+  const activeCount = list => (list || []).filter(item => !item.archived).length
   const draftLabel = hasDraft && data?.project?.clientName
     ? `Continue draft: ${data.project.clientName}${data.project.jobRef ? ' (' + data.project.jobRef + ')' : ''}`
     : 'Continue saved draft'
@@ -33,10 +40,10 @@ export default function Home({ onStart, onRecords, onTemplates, hasDraft, data }
       </div>
 
       <div className="stat-grid">
-        <div className="stat-tile"><div className="num">11</div><div className="label">Risk Assessments in library</div></div>
-        <div className="stat-tile"><div className="num">7</div><div className="label">COSHH sheets in library</div></div>
-        <div className="stat-tile"><div className="num">4</div><div className="label">Method Statements in library</div></div>
-        <div className="stat-tile"><div className="num">15</div><div className="label">Guided sections, mirroring the paper template</div></div>
+        <div className="stat-tile"><div className="num">{activeCount(riskAssessments)}</div><div className="label">Risk Assessments in library</div></div>
+        <div className="stat-tile"><div className="num">{activeCount(coshhSheets)}</div><div className="label">COSHH sheets in library</div></div>
+        <div className="stat-tile"><div className="num">{activeCount(methodStatements)}</div><div className="label">Method Statements in library</div></div>
+        <div className="stat-tile"><div className="num">{STEPS.length}</div><div className="label">Guided sections, mirroring the paper template</div></div>
       </div>
 
       <div className="card" style={{ marginTop: 24 }}>
